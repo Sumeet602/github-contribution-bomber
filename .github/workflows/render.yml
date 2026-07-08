@@ -20,7 +20,7 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: rm -f package-lock.json && npm install
+        run: npx pnpm install --no-frozen-lockfile
 
       - name: Render Video
         # Automatically passes the repository owner's username as a prop so anyone can fork this!
