@@ -23,13 +23,24 @@ jobs:
         run: npm ci
 
       - name: Render Video
-        # Passes your username as a prop. Outputting an uncompromised full-size GIF (1200x600) at 30fps.
-        run: npx remotion render MyComp out.gif --props='{"username": "dhruv-mavani"}'
+        # Automatically passes the repository owner's username as a prop so anyone can fork this!
+        run: |
+          npx remotion render MyComp out.gif --props='{"username": "${{ github.repository_owner }}"}'
+
+      - name: Generate Personalized Embed Code
+        run: |
+          echo "# 🎉 Your Bomber is Ready!" > USAGE.md
+          echo "" >> USAGE.md
+          echo "Copy and paste this exact code anywhere in your Profile README (\`${{ github.repository_owner }}/${{ github.repository_owner }}\`):" >> USAGE.md
+          echo "" >> USAGE.md
+          echo "\`\`\`html" >> USAGE.md
+          echo "<img src=\"https://github.com/${{ github.repository_owner }}/github-contribution-bomber/blob/main/out.gif?raw=true\" width=\"100%\" />" >> USAGE.md
+          echo "\`\`\`" >> USAGE.md
 
       - name: Commit and Push
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add out.gif
+          git add out.gif USAGE.md
           git commit -m "chore: auto-update contribution bomber video [skip ci]" || echo "No changes to commit"
           git push
