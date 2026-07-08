@@ -20,7 +20,7 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Render Video
         # Automatically passes the repository owner's username as a prop so anyone can fork this!
