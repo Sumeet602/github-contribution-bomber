@@ -24,8 +24,9 @@ const AIRPLANE_SPEED = 0.35; // slower, majestic flight speed
 
 const calculateMetadata: CalculateMetadataFunction<MyCompositionProps> = async ({ props, abortSignal }) => {
   try {
-    // Added a cache-buster (?v=...) so the CORS proxy never serves a stale cached version
-    const res = await fetch(`https://corsproxy.io/?https://github.com/users/${props.username}/contributions?v=${Date.now()}`, {
+    // Fetch the strict current calendar year (Jan 1 - Dec 31) so it resets every New Year
+    const currentYear = new Date().getFullYear();
+    const res = await fetch(`https://corsproxy.io/?https://github.com/users/${props.username}/contributions?from=${currentYear}-01-01&to=${currentYear}-12-31&v=${Date.now()}`, {
       signal: abortSignal,
     });
     const html = await res.text();
