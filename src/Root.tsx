@@ -24,7 +24,8 @@ const AIRPLANE_SPEED = 0.35; // slower, majestic flight speed
 
 const calculateMetadata: CalculateMetadataFunction<MyCompositionProps> = async ({ props, abortSignal }) => {
   try {
-    const res = await fetch(`https://corsproxy.io/?https://github.com/users/${props.username}/contributions`, {
+    // Added a cache-buster (?v=...) so the CORS proxy never serves a stale cached version
+    const res = await fetch(`https://corsproxy.io/?https://github.com/users/${props.username}/contributions?v=${Date.now()}`, {
       signal: abortSignal,
     });
     const html = await res.text();
