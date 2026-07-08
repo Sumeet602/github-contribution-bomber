@@ -24,9 +24,8 @@ const AIRPLANE_SPEED = 0.35; // slower, majestic flight speed
 
 const calculateMetadata: CalculateMetadataFunction<MyCompositionProps> = async ({ props, abortSignal }) => {
   try {
-    // Fetch the strict current calendar year (Jan 1 - Dec 31) so it resets every New Year
-    const currentYear = new Date().getFullYear();
-    const res = await fetch(`https://corsproxy.io/?https://github.com/users/${props.username}/contributions?from=${currentYear}-01-01&to=${currentYear}-12-31&v=${Date.now()}`, {
+    // Added a cache-buster (?v=...) so the CORS proxy never serves a stale cached version
+    const res = await fetch(`https://corsproxy.io/?https://github.com/users/${props.username}/contributions?v=${Date.now()}`, {
       signal: abortSignal,
     });
     const html = await res.text();
@@ -41,10 +40,22 @@ const calculateMetadata: CalculateMetadataFunction<MyCompositionProps> = async (
     const COLS = 52;
     const ROWS = 7;
 
-    while (levels.length < COLS * ROWS) {
-      levels.push(0);
+    // GitHub HTML outputs cells in ROW-MAJOR order:
+    // [all Sundays (53 weeks), all Mondays (53 weeks), ..., all Saturdays (53 weeks)]
+    // We must transpose this into COLUMN-MAJOR order for the 3D grid:
+    // [week0: Sun-Sat, week1: Sun-Sat, ..., week51: Sun-Sat]
+    const RAW_COLS = Math.ceil(levels.length / ROWS); // typically 53 weeks
+    const startCol = Math.max(0, RAW_COLS - COLS); // keep last 52 weeks
+    const finalLevels: number[] = new Array(COLS * ROWS).fill(0);
+    for (let r = 0; r < ROWS; r++) {
+      for (let rawC = startCol; rawC < RAW_COLS; rawC++) {
+        const srcIdx = r * RAW_COLS + rawC;
+        const destC = rawC - startCol;
+        if (srcIdx < levels.length && destC < COLS) {
+          finalLevels[destC * ROWS + r] = levels[srcIdx];
+        }
+      }
     }
-    const finalLevels = levels.slice(-COLS * ROWS);
 
     let greenBlocks = [];
     for (let i = 0; i < finalLevels.length; i++) {
